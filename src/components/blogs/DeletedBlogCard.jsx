@@ -6,29 +6,29 @@ const DeletedBlogCard = ({ blog, onRestore, onDelete }) => {
   const { t } = useTranslation();
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+    <div className="theme-bg-secondary rounded-lg shadow-sm border theme-border overflow-hidden hover:shadow-md transition-shadow">
       {/* Card Content */}
       <div className="p-4">
         {/* Header with Image, Title, and Badge */}
         <div className="flex gap-3 mb-4">
           {/* Thumbnail */}
-          <div className="w-16 h-16 flex-shrink-0 bg-gray-200 rounded overflow-hidden">
+          <div className="w-16 h-16 flex-shrink-0 theme-bg-tertiary rounded overflow-hidden">
             {blog.image ? (
               <img src={blog.image} alt={blog.title} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-300" />
+              <div className="w-full h-full flex items-center justify-center theme-bg-tertiary" />
             )}
           </div>
 
           {/* Title and Metadata */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2 mb-0.5">
-              <h3 className="font-bold text-gray-900 text-sm line-clamp-2">{blog.title}</h3>
+              <h3 className="font-bold theme-text-primary text-sm line-clamp-2">{blog.title}</h3>
               <span className="bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded whitespace-nowrap">
                 {t('deleted')}
               </span>
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs theme-text-secondary">
               {t('deleted')}: {blog.deletedAt ? new Date(blog.deletedAt).toLocaleDateString() : 'N/A'}
             </p>
           </div>

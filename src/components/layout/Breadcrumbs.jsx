@@ -17,22 +17,22 @@ const Breadcrumbs = () => {
   };
 
   return (
-    <div className="flex items-center text-sm text-gray-500 mb-6 bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-100">
-      <button onClick={() => { setActiveTab('dashboard'); setReadingBlog(null); }} className="flex items-center hover:text-indigo-600 transition-colors">
+    <div className="flex items-center text-sm theme-text-secondary mb-6 theme-bg-secondary px-4 py-3 rounded-xl shadow-sm border theme-border">
+      <button onClick={() => { setActiveTab('dashboard'); setReadingBlog(null); }} className="flex items-center hover:text-[#ff8449] transition-colors theme-text-secondary">
         <Home size={16} className="mr-2" />{t('home')}
       </button>
       {activeTab !== 'dashboard' && (
         <>
-          <ChevronRight size={14} className="mx-2 text-gray-400" />
-          <button onClick={() => { setReadingBlog(null); }} className={`${!readingBlog ? 'font-bold text-indigo-600 cursor-default' : 'hover:text-indigo-600 transition-colors'}`} disabled={!readingBlog}>
+          <ChevronRight size={14} className="mx-2 theme-text-secondary opacity-60" />
+          <button onClick={() => { setReadingBlog(null); }} className={`${!readingBlog ? 'font-bold text-[#ff8449] cursor-default' : 'hover:text-[#ff8449] transition-colors theme-text-secondary'}`} disabled={!readingBlog}>
             {getTabLabel()}
           </button>
         </>
       )}
       {readingBlog && (
         <>
-          <ChevronRight size={14} className="mx-2 text-gray-400" />
-          <span className="font-bold text-indigo-600 truncate max-w-[200px] sm:max-w-xs">{readingBlog.title}</span>
+          <ChevronRight size={14} className="mx-2 theme-text-secondary opacity-60" />
+          <span className="font-bold text-[#ff8449] truncate max-w-[200px] sm:max-w-xs">{readingBlog.title}</span>
         </>
       )}
     </div>

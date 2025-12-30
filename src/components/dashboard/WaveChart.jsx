@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../../context/AppContext';
 
-const WaveChart = ({ data, color = "#4F46E5", labels = [] }) => {
+const WaveChart = ({ data, color = "#ff8449", labels = [] }) => {
   const { t } = useTranslation();
   const { t: appT } = useAppContext();
   const [tooltip, setTooltip] = useState(null);

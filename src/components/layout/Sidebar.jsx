@@ -38,25 +38,25 @@ const Sidebar = () => {
     <>
       {isSidebarOpen && <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setIsSidebarOpen(false)} />}
       
-      <aside className={`fixed inset-y-0 left-0 z-40 bg-white border-r shadow-xl transform transition-all duration-300 flex flex-col justify-between
+      <aside className={`fixed inset-y-0 left-0 z-40 theme-bg-secondary theme-border border-r shadow-xl transform transition-all duration-300 flex flex-col justify-between
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         ${isCollapsed ? 'lg:w-20' : 'lg:w-64'} w-64`}>
         
         {/* Header */}
         <div>
-          <div className="h-16 flex items-center px-4 border-b gap-2">
+          <div className="h-16 flex items-center px-4 theme-border border-b gap-2">
             {/* Desktop Header */}
             <div className="hidden lg:flex items-center gap-3 w-full">
-              <button onClick={toggleMenu} className="p-1 hover:bg-gray-100 rounded flex items-center justify-center flex-shrink-0" title={isCollapsed ? tContext('dashboard') : 'Collapse Sidebar'}>
+              <button onClick={toggleMenu} className="p-1 theme-hover rounded flex items-center justify-center flex-shrink-0" title={isCollapsed ? tContext('dashboard') : 'Collapse Sidebar'}>
                 <Menu size={24} className="text-gray-600" />
               </button>
-              {!isCollapsed && <span className="text-lg font-bold text-gray-900">Edwid<span className="text-indigo-600">Admin</span></span>}
+              {!isCollapsed && <span className="text-lg font-bold theme-text-primary transition-colors duration-300">Edwid<span className="text-[#ff8449]">Admin</span></span>}
             </div>
             
             {/* Mobile/Tablet Header */}
             <div className="flex lg:hidden items-center gap-3 w-full">
-              <span className="text-lg font-bold text-gray-900">Edwid<span className="text-indigo-600">Admin</span></span>
-              <button onClick={() => setIsSidebarOpen(false)} className="ml-auto p-1 hover:bg-gray-100 rounded">
+              <span className="text-lg font-bold theme-text-primary transition-colors duration-300">Edwid<span className="text-[#ff8449]">Admin</span></span>
+              <button onClick={() => setIsSidebarOpen(false)} className="ml-auto p-1 theme-hover rounded">
                 <X size={24} className="text-gray-700" />
               </button>
             </div>
@@ -70,8 +70,8 @@ const Sidebar = () => {
                 onClick={() => handleItemClick(item)}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-all relative
                   ${activeTab === item.id 
-                    ? 'bg-indigo-100 text-indigo-700' 
-                    : 'text-gray-700 hover:bg-gray-100'
+                    ? 'bg-[#ff8449] text-white' 
+                    : 'theme-text-primary hover:bg-[#ff8449] hover:text-white'
                   }
                   ${isCollapsed && 'lg:justify-center lg:gap-0'}`}
                 title={item.label}
@@ -80,7 +80,7 @@ const Sidebar = () => {
                 
                 {(!isCollapsed || window.innerWidth < 1024) && (
                   <>
-                    <span className="flex-1 text-left text-black">{item.label}</span>
+                    <span className="flex-1 text-left">{item.label}</span>
                     {item.badge > 0 && (
                       <span className="bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                         {item.badge}
@@ -100,7 +100,7 @@ const Sidebar = () => {
         </div>
         
         {/* Footer */}
-        <div className="p-3 border-t space-y-2">
+        <div className="p-3 theme-border border-t space-y-2 transition-colors duration-300">
           {(!isCollapsed || window.innerWidth < 1024) && (
             <div className="px-3 py-2 mb-2">
               {!isOffline ? (
@@ -119,14 +119,14 @@ const Sidebar = () => {
             onClick={() => { setActiveTab('settings'); setIsSidebarOpen(false); }}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-all
               ${activeTab === 'settings'
-                ? 'bg-indigo-100 text-indigo-700'
-                : 'text-gray-700 hover:bg-gray-100'
+                ? 'bg-[#ff8449] text-white'
+                : 'theme-text-primary hover:bg-[#ff8449] hover:text-white'
               }
               ${isCollapsed && 'lg:justify-center lg:gap-0'}`}
             title={tContext('settings')}
           >
             <Settings size={20} className="flex-shrink-0" />
-            {(!isCollapsed || window.innerWidth < 1024) && <span className="flex-1 text-left text-black">{tContext('settings')}</span>}
+            {(!isCollapsed || window.innerWidth < 1024) && <span className="flex-1 text-left">{tContext('settings')}</span>}
           </button>
           
           <button
@@ -136,7 +136,7 @@ const Sidebar = () => {
             title={tContext('logout')}
           >
             <LogOut size={20} className="flex-shrink-0" />
-            {(!isCollapsed || window.innerWidth < 1024) && <span className="flex-1 text-left text-black">{tContext('logout')}</span>}
+            {(!isCollapsed || window.innerWidth < 1024) && <span className="flex-1 text-left">{tContext('logout')}</span>}
           </button>
         </div>
       </aside>

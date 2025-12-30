@@ -21,7 +21,7 @@ const TrashView = () => {
     else await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'blogs', id), { isDeleted: false, deletedAt: null });
     
     if (blog) {
-      addNotification('success', 'blogRestored', `"${blog.title}" ${t('blogRestoredMsg')}.`, '♻️');
+      addNotification('success', 'blogRestored', `"${blog.title}" ${t('blogRestoredMsg')}.`, '♻️', { type: 'navigate', target: 'blogs' });
     }
   };
   
@@ -44,7 +44,7 @@ const TrashView = () => {
   return (
     <div className="space-y-6">
       {/* Header Card with Icon and Title */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div className="theme-bg-secondary rounded-xl shadow-sm border border-gray-100 p-6">
         <div className="flex items-center gap-4">
           {/* Trash Icon Container */}
           <div className="w-16 h-16 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -53,7 +53,7 @@ const TrashView = () => {
           
           {/* Title and Badge */}
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold text-gray-800">{t('recycleBin')}</h2>
+            <h2 className="text-2xl font-bold theme-text-primary">{t('recycleBin')}</h2>
             <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-semibold">
               {trashItems.length}
             </span>
@@ -63,11 +63,11 @@ const TrashView = () => {
 
       {/* Trash Items or Empty State */}
       {trashItems.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-48 bg-white rounded-xl border border-gray-100">
+        <div className="flex flex-col items-center justify-center py-48 theme-bg-secondary rounded-xl border border-gray-100">
           <div className="mb-6 p-6 bg-gray-100 rounded-full">
             <Trash2 size={56} className="text-gray-300" />
           </div>
-          <p className="text-gray-500 text-xl font-medium">{t('trashEmpty')}</p>
+          <p className="theme-text-secondary text-xl font-medium">{t('trashEmpty')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

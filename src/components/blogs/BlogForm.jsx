@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Upload } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../../context/AppContext';
@@ -12,7 +12,7 @@ const BlogForm = ({ initialData, onClose }) => {
   const { user, isOffline, setBlogs, blogs, setBadges, addNotification } = useAppContext();
   const { t } = useTranslation();
   
-  const defaultState = { title: '', description: '', category: '', author: '', image: '', publishDate: new Date().toISOString().split('T')[0], status: 'Publish', views: 0 };
+  const defaultState = () => ({ title: '', description: '', category: '', author: '', image: '', publishDate: new Date().toISOString().split('T')[0], status: 'Publish', views: 0 });
   
   const normalizedInitialData = initialData ? {
     ...initialData,
@@ -26,10 +26,40 @@ const BlogForm = ({ initialData, onClose }) => {
     image: String(initialData.image || '')
   } : null;
   
-  const [formData, setFormData] = useState(normalizedInitialData || defaultState);
+  const [formData, setFormData] = useState(() => {
+    if (normalizedInitialData) {
+      return normalizedInitialData;
+    }
+    // For new blogs, always use current date - force fresh calculation
+    const today = new Date();
+    const currentDate = today.getFullYear() + '-' + 
+      String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+      String(today.getDate()).padStart(2, '0');
+    return {
+      title: '', 
+      description: '', 
+      category: '', 
+      author: '', 
+      image: '', 
+      publishDate: currentDate, 
+      status: 'Publish', 
+      views: 0
+    };
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isChanged = useMemo(() => JSON.stringify(formData) !== JSON.stringify(normalizedInitialData || defaultState), [formData, normalizedInitialData]);
+  // Reset date for new blogs when component mounts
+  useEffect(() => {
+    if (!initialData) {
+      const today = new Date();
+      const currentDate = today.getFullYear() + '-' + 
+        String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+        String(today.getDate()).padStart(2, '0');
+      setFormData(prev => ({ ...prev, publishDate: currentDate }));
+    }
+  }, [initialData]);
+
+  const isChanged = useMemo(() => JSON.stringify(formData) !== JSON.stringify(normalizedInitialData || defaultState()), [formData, normalizedInitialData]);
 
   const compressImage = (dataUrl) => {
     return new Promise((resolve) => {
@@ -141,14 +171,29 @@ const BlogForm = ({ initialData, onClose }) => {
         const updated = blogs.map(b => b.id === initialData.id ? { ...b, ...dataToSave } : b); 
         setBlogs(updated); 
         localStorage.setItem('edwid_blogs', JSON.stringify(updated));
-        addNotification('success', 'blogUpdated', `"${dataToSave.title}" ${t('blogUpdatedMsg')}.`, '✏️');
+        
+        // Check for status change and add notification
+        if (initialData.status !== dataToSave.status) {
+          if (dataToSave.status === 'Publish') {
+            addNotification('success', 'Blog Published', `"${dataToSave.title}" has been published.`, '📢', { type: 'navigate', target: 'blogs' });
+          } else if (dataToSave.status === 'Draft') {
+            addNotification('info', 'Blog Updated to Draft', `"${dataToSave.title}" has been moved to drafts.`, '📝', { type: 'navigate', target: 'blogs' });
+          }
+        } else {
+          addNotification('success', 'blogUpdated', `"${dataToSave.title}" ${t('blogUpdatedMsg')}.`, '✏️', { type: 'navigate', target: 'blogs' });
+        }
       }
       else { 
         const newBlog = { ...dataToSave, id: "b_" + Date.now() }; 
         const updated = [newBlog, ...blogs]; 
         setBlogs(updated); 
         localStorage.setItem('edwid_blogs', JSON.stringify(updated));
-        addNotification('success', 'blogCreated', `"${dataToSave.title}" ${t('blogCreatedMsg')}.`, '📝');
+        
+        if (dataToSave.status === 'Publish') {
+          addNotification('success', 'Blog Published', `"${dataToSave.title}" has been published.`, '📢', { type: 'navigate', target: 'blogs' });
+        } else {
+          addNotification('success', 'blogCreated', `"${dataToSave.title}" ${t('blogCreatedMsg')}.`, '📝', { type: 'navigate', target: 'blogs' });
+        }
       }
       setIsSubmitting(false); 
       onClose();
@@ -156,11 +201,26 @@ const BlogForm = ({ initialData, onClose }) => {
       try {
          if (initialData?.id) {
            await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'blogs', initialData.id), dataToSave);
-           addNotification('success', 'blogUpdated', `"${dataToSave.title}" ${t('blogUpdatedMsg')}.`, '✏️');
+           
+           // Check for status change and add notification
+           if (initialData.status !== dataToSave.status) {
+             if (dataToSave.status === 'Publish') {
+               addNotification('success', 'Blog Published', `"${dataToSave.title}" has been published.`, '📢', { type: 'navigate', target: 'blogs' });
+             } else if (dataToSave.status === 'Draft') {
+               addNotification('info', 'Blog Updated to Draft', `"${dataToSave.title}" has been moved to drafts.`, '📝', { type: 'navigate', target: 'blogs' });
+             }
+           } else {
+             addNotification('success', 'blogUpdated', `"${dataToSave.title}" ${t('blogUpdatedMsg')}.`, '✏️', { type: 'navigate', target: 'blogs' });
+           }
          }
          else {
            await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'blogs'), dataToSave);
-           addNotification('success', 'blogCreated', `"${dataToSave.title}" ${t('blogCreatedMsg')}.`, '📝');
+           
+           if (dataToSave.status === 'Publish') {
+             addNotification('success', 'Blog Published', `"${dataToSave.title}" has been published.`, '📢', { type: 'navigate', target: 'blogs' });
+           } else {
+             addNotification('success', 'blogCreated', `"${dataToSave.title}" ${t('blogCreatedMsg')}.`, '📝', { type: 'navigate', target: 'blogs' });
+           }
          }
          onClose();
       } catch (err) { 
@@ -223,18 +283,18 @@ const BlogForm = ({ initialData, onClose }) => {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-1">
-          <label className="block text-xs font-bold text-gray-700 uppercase mb-3">{t('uploadCoverImage')}</label>
-          <label className={`cursor-pointer w-full h-48 border-2 border-dashed rounded-xl flex items-center justify-center hover:bg-gray-50 transition-colors ${
-            imageError ? 'border-red-300 bg-red-50' : 'border-gray-300'
+          <label className="block text-xs font-bold theme-text-primary uppercase mb-3">{t('uploadCoverImage')}</label>
+          <label className={`cursor-pointer w-full h-48 border-2 border-dashed rounded-xl flex items-center justify-center hover:theme-bg-tertiary transition-colors ${
+            imageError ? 'border-red-300 bg-red-50' : 'theme-border'
           }`}>
             {formData.image ? (
               <img src={formData.image} alt="preview" className="h-full w-full object-cover rounded-lg" />
             ) : (
               <div className="text-center">
                 <div className="bg-gray-100 p-4 rounded-lg w-fit mx-auto mb-2">
-                  <Upload size={24} className="text-gray-400" />
+                  <Upload size={24} className="theme-text-secondary" />
                 </div>
-                <p className="text-sm text-gray-500">{t('clickToUpload') || 'Click to upload'}</p>
+                <p className="text-sm theme-text-secondary">{t('clickToUpload') || 'Click to upload'}</p>
               </div>
             )}
             <input type="file" className="hidden" accept=".jpg,.jpeg,.png" onChange={handleImage} />
@@ -242,12 +302,12 @@ const BlogForm = ({ initialData, onClose }) => {
           {imageError && (
             <p className="text-red-500 text-sm mt-2 font-medium">❌ {imageError}</p>
           )}
-          <p className="text-gray-500 text-xs mt-1">Only JPG/PNG files under 1MB allowed</p>
+          <p className="theme-text-secondary text-xs mt-1">Only JPG/PNG files under 1MB allowed</p>
         </div>
 
         <div className="md:col-span-2 space-y-4">
           <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase mb-2">{t('title')}</label>
+            <label className="block text-xs font-bold theme-text-primary uppercase mb-2">{t('title')}</label>
             <input
               type="text"
               value={formData.title}
@@ -259,8 +319,8 @@ const BlogForm = ({ initialData, onClose }) => {
               }}
               required
               placeholder={t('enterCompellingTitle')}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-                formErrors.title ? 'border-red-300 bg-red-50' : 'border-gray-300'
+              className={`w-full px-4 py-2 theme-border border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8449] focus:border-transparent theme-bg-secondary theme-text-primary ${
+                formErrors.title ? 'border-red-300 bg-red-50' : 'theme-border'
               }`}
             />
             {formErrors.title && (
@@ -270,7 +330,7 @@ const BlogForm = ({ initialData, onClose }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase mb-2">{t('author')}</label>
+              <label className="block text-xs font-bold theme-text-primary uppercase mb-2">{t('author')}</label>
               <input
                 type="text"
                 value={formData.author}
@@ -282,8 +342,8 @@ const BlogForm = ({ initialData, onClose }) => {
                 }}
                 required
                 placeholder={t('author')}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-                  formErrors.author ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                className={`w-full px-4 py-2 theme-border border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8449] focus:border-transparent theme-bg-secondary theme-text-primary ${
+                  formErrors.author ? 'border-red-300 bg-red-50' : 'theme-border'
                 }`}
               />
               {formErrors.author && (
@@ -291,7 +351,7 @@ const BlogForm = ({ initialData, onClose }) => {
               )}
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase mb-2">{t('category')}</label>
+              <label className="block text-xs font-bold theme-text-primary uppercase mb-2">{t('category')}</label>
               <select
                 value={formData.category}
                 onChange={e => {
@@ -300,8 +360,8 @@ const BlogForm = ({ initialData, onClose }) => {
                     setFormErrors(prev => ({...prev, category: ''}));
                   }
                 }}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white ${
-                  formErrors.category ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                className={`w-full px-4 py-2 theme-border border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8449] focus:border-transparent theme-bg-secondary theme-text-primary ${
+                  formErrors.category ? 'border-red-300 bg-red-50' : 'theme-border'
                 }`}
               >
                 <option value="" disabled>{t('selectCategory') || 'Select category'}</option>
@@ -320,7 +380,7 @@ const BlogForm = ({ initialData, onClose }) => {
       </div>
 
       <div>
-        <label className="block text-xs font-bold text-gray-700 uppercase mb-3">{t('description')}</label>
+        <label className="block text-xs font-bold theme-text-primary uppercase mb-3">{t('description')}</label>
         <textarea
           value={formData.description}
           onChange={e => {
@@ -331,8 +391,8 @@ const BlogForm = ({ initialData, onClose }) => {
           }}
           required
           placeholder={t('writeBlogContent')}
-          className={`w-full px-4 py-3 border rounded-lg h-40 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none ${
-            formErrors.description ? 'border-red-300 bg-red-50' : 'border-gray-300'
+          className={`w-full px-4 py-3 theme-border border rounded-lg h-40 focus:outline-none focus:ring-2 focus:ring-[#ff8449] focus:border-transparent resize-none theme-bg-secondary theme-text-primary ${
+            formErrors.description ? 'border-red-300 bg-red-50' : 'theme-border'
           }`}
         />
         {formErrors.description && (
@@ -342,40 +402,45 @@ const BlogForm = ({ initialData, onClose }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-bold text-gray-700 uppercase mb-2">{t('status')}</label>
+          <label className="block text-xs font-bold theme-text-primary uppercase mb-2">{t('status')}</label>
           <select
             value={formData.status}
             onChange={e => setFormData({...formData, status: e.target.value})}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
+            className="w-full px-4 py-2 theme-border border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8449] focus:border-transparent theme-bg-secondary theme-text-primary"
           >
             <option value="Draft">{t('draft')}</option>
             <option value="Publish">{t('Publish')}</option>
           </select>
         </div>
         <div>
-          <label className="block text-xs font-bold text-gray-700 uppercase mb-2">{t('date')}</label>
+          <label className="block text-xs font-bold theme-text-primary uppercase mb-2">{t('date')}</label>
           <input
             type="date"
             value={formData.publishDate}
             onChange={e => setFormData({...formData, publishDate: e.target.value})}
             required
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            min={new Date().toISOString().split('T')[0]}
+            className="w-full px-4 py-2 theme-border border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8449] focus:border-transparent theme-bg-secondary theme-text-primary"
           />
         </div>
       </div>
 
-      <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+      <div className="flex justify-end gap-3 pt-6 border-t theme-border">
         <button
           type="button"
           onClick={onClose}
-          className="px-6 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors"
+          className="px-6 py-2 theme-text-primary font-medium hover:bg-gray-100 rounded-lg transition-colors"
         >
           {t('cancel')}
         </button>
         <button
           type="submit"
           disabled={isSubmitting || !isChanged}
-          className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors flex items-center gap-2"
+          className={`px-6 py-2 font-medium rounded-lg transition-colors flex items-center gap-2 ${
+            isSubmitting || !isChanged 
+              ? 'bg-[#ff8449] opacity-50 cursor-not-allowed text-white' 
+              : 'bg-[#ff8449] hover:bg-[#e6753d] text-white'
+          }`}
         >
           📌 {isSubmitting ? t('saving') : initialData ? t('updateBlog') : t('saveBlog')}
         </button>

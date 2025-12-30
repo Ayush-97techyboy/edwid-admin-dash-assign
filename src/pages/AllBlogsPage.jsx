@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, Plus, Eye, Edit2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Plus, Eye, Edit2, Trash2, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../context/AppContext';
 import BlogCard from '../components/blogs/BlogCard';
@@ -23,6 +23,7 @@ const AllBlogsView = () => {
   const { blogs, setEditingBlog, setIsBlogModalOpen, isOffline, setBlogs, user, setReadingBlog, setBadges, setActiveTab, addNotification, softDeleteBlog } = useAppContext();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedStatus, setSelectedStatus] = useState('All');
   const [searchType, setSearchType] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -40,6 +41,14 @@ const AllBlogsView = () => {
     
     if (selectedCategory !== 'All') {
       result = result.filter(b => b.category === selectedCategory);
+    }
+
+    if (selectedStatus !== 'All') {
+      if (selectedStatus === 'Published') {
+        result = result.filter(b => b.status === 'Publish' || b.status === 'Published');
+      } else if (selectedStatus === 'Draft') {
+        result = result.filter(b => b.status === 'Draft');
+      }
     }
 
     if (searchTerm.trim()) {
@@ -63,7 +72,7 @@ const AllBlogsView = () => {
     }
 
     return result;
-  }, [blogs, searchTerm, selectedCategory, searchType]);
+  }, [blogs, searchTerm, selectedCategory, selectedStatus, searchType]);
 
   const totalPages = Math.ceil(filtered.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
@@ -77,6 +86,15 @@ const AllBlogsView = () => {
 
   const handleCategoryChange = (e) => {
     setSelectedCategory(e.target.value);
+    setCurrentPage(1);
+  };
+  
+  const handleStatusChange = (status) => {
+    if (selectedStatus === status) {
+      setSelectedStatus('All'); // Toggle off if same status clicked
+    } else {
+      setSelectedStatus(status);
+    }
     setCurrentPage(1);
   };
   
@@ -99,23 +117,23 @@ const AllBlogsView = () => {
   
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg border border-indigo-100 px-4 py-2 text-center">
-        <p className="text-xs sm:text-sm text-gray-700 font-medium">{getCurrentDateTime()}</p>
+      <div className="bg-gradient-to-r from-primary-50 to-blue-50 rounded-lg border border-primary-100 px-4 py-2 text-center">
+        <p className="text-xs sm:text-sm theme-text-primary font-medium">{getCurrentDateTime()}</p>
       </div>
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <h2 className="text-2xl font-bold text-gray-800">{t('allBlogs')}</h2>
+        <h2 className="text-2xl font-bold theme-text-primary">{t('allBlogs')}</h2>
         <Button onClick={() => setActiveTab('create')}><Plus size={18} className="mr-2" /> {t('createBlog')}</Button>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-4">
+      <div className="theme-bg-secondary rounded-lg theme-border border p-4 space-y-4">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 flex gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 theme-text-secondary" size={18} />
               <input 
                 type="text" 
                 placeholder={t('searchAuthorCategoryTitle')}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 w-full" 
+                className="pl-10 pr-4 py-2 theme-border border rounded-lg focus:ring-2 focus:ring-primary-500 w-full theme-bg-secondary theme-text-primary" 
                 value={searchTerm} 
                 onChange={handleSearchChange} 
               />
@@ -125,7 +143,7 @@ const AllBlogsView = () => {
           <select 
             value={selectedCategory}
             onChange={handleCategoryChange}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white"
+            className="px-4 py-2 theme-border border rounded-lg focus:ring-2 focus:ring-primary-500 theme-bg-secondary theme-text-primary"
           >
             {categories.map(cat => (
               <option key={cat} value={cat}>
@@ -136,22 +154,42 @@ const AllBlogsView = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="theme-bg-secondary rounded-lg border theme-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="theme-bg-tertiary border-b theme-border">
               <tr>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">{t('Blog')}</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">{t('category')}</th>
-                <th className="hidden md:table-cell px-6 py-3 text-left text-sm font-semibold text-gray-700">{t('publishedDate')}</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">{t('status')}</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">{t('action')}</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold theme-text-primary">{t('Blog')}</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold theme-text-primary">{t('category')}</th>
+                <th className="hidden md:table-cell px-6 py-3 text-left text-sm font-semibold theme-text-primary">{t('publishedDate')}</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold theme-text-primary">
+                  <div className="flex items-center gap-2">
+                    {t('status')}
+                    <div className="flex flex-col">
+                      <button 
+                        onClick={() => handleStatusChange('Published')}
+                        className={`p-0.5 hover:bg-gray-200 rounded transition-colors ${selectedStatus === 'Published' ? 'text-[#ff8449]' : 'theme-text-secondary'}`}
+                        title="Show Published"
+                      >
+                        <ChevronUp size={14} />
+                      </button>
+                      <button 
+                        onClick={() => handleStatusChange('Draft')}
+                        className={`p-0.5 hover:bg-gray-200 rounded transition-colors ${selectedStatus === 'Draft' ? 'text-[#ff8449]' : 'theme-text-secondary'}`}
+                        title="Show Drafts"
+                      >
+                        <ChevronDown size={14} />
+                      </button>
+                    </div>
+                  </div>
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold theme-text-primary">{t('action')}</th>
               </tr>
             </thead>
             <tbody>
               {paginatedBlogs.length > 0 ? (
                 paginatedBlogs.map(blog => (
-                  <tr key={blog.id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                  <tr key={blog.id} className="border-b theme-border hover:theme-bg-tertiary transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <button onClick={() => setReadingBlog(blog)} className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 hover:opacity-80 transition-opacity cursor-pointer">
@@ -164,18 +202,18 @@ const AllBlogsView = () => {
                           )}
                         </button>
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-sm font-semibold text-gray-900 truncate">{blog.title}</h3>
-                          <p className="text-xs text-gray-500 truncate">{blog.author || 'Unknown Author'}</p>
-                          <p className="md:hidden text-xs text-gray-400 mt-1">{blog.publishDate ? new Date(blog.publishDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }) : 'N/A'}</p>
+                          <h3 className="text-sm font-semibold theme-text-primary truncate">{blog.title}</h3>
+                          <p className="text-xs theme-text-secondary truncate">{blog.author || 'Unknown Author'}</p>
+                          <p className="md:hidden text-xs theme-text-secondary mt-1">{blog.publishDate ? new Date(blog.publishDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }) : 'N/A'}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm theme-text-secondary">
                       <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
                         {getCategoryTranslation(blog.category, t)}
                       </span>
                     </td>
-                    <td className="hidden md:table-cell px-6 py-4 text-sm text-gray-600">
+                    <td className="hidden md:table-cell px-6 py-4 text-sm theme-text-secondary">
                       {blog.publishDate ? new Date(blog.publishDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }) : 'N/A'}
                     </td>
                     <td className="px-6 py-4">
@@ -191,7 +229,7 @@ const AllBlogsView = () => {
                       <div className="flex items-center gap-2">
                         <button 
                           onClick={() => setReadingBlog(blog)}
-                          className="p-2 hover:bg-indigo-50 rounded-lg text-indigo-600 hover:text-indigo-700 transition-colors" 
+                          className="p-2 hover:bg-primary-50 rounded-lg text-primary-600 hover:text-primary-700 transition-colors" 
                           title="Preview Blog"
                         >
                           <Eye size={18} />
@@ -218,7 +256,7 @@ const AllBlogsView = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan="5" className="px-6 py-8 text-center theme-text-secondary">
                     {t('noResultsFound')}
                   </td>
                 </tr>
@@ -230,14 +268,14 @@ const AllBlogsView = () => {
 
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">Show</span>
+          <span className="text-sm theme-text-secondary">Show</span>
           <select 
             value={rowsPerPage}
             onChange={(e) => {
               setRowsPerPage(Number(e.target.value));
               setCurrentPage(1);
             }}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+            className="px-3 py-2 border theme-border rounded-lg focus:ring-2 focus:ring-primary-500 theme-bg-secondary theme-text-primary"
           >
             <option value={5}>5</option>
             <option value={10}>10</option>
@@ -247,7 +285,7 @@ const AllBlogsView = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">
+          <span className="text-sm theme-text-secondary">
             Page <span className="font-semibold">{currentPage}</span> of <span className="font-semibold">{Math.max(totalPages, 1)}</span>
           </span>
         </div>
@@ -256,7 +294,7 @@ const AllBlogsView = () => {
           <button 
             onClick={handlePreviousPage}
             disabled={currentPage === 1}
-            className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="p-2 theme-hover rounded-lg theme-text-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title="Previous Page"
           >
             <ChevronLeft size={20} />
@@ -264,7 +302,7 @@ const AllBlogsView = () => {
           <button 
             onClick={handleNextPage}
             disabled={currentPage >= totalPages}
-            className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="p-2 theme-hover rounded-lg theme-text-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title="Next Page"
           >
             <ChevronRight size={20} />

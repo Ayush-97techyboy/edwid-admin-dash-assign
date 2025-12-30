@@ -25,7 +25,7 @@ const LanguageSelector = () => {
             key={language.code}
             onClick={() => setLang(language.code)}
             className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors ${
-              lang === language.code ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700'
+              lang === language.code ? 'bg-primary-50 text-primary-600' : 'text-gray-700'
             } ${language.code !== languages[languages.length - 1].code ? 'border-b border-gray-100' : ''}`}
           >
             <span className="text-xl">{language.flag}</span>
@@ -34,7 +34,7 @@ const LanguageSelector = () => {
               <div className="text-xs text-gray-500">{language.code.toUpperCase()}</div>
             </div>
             {lang === language.code && (
-              <div className="ml-auto w-2 h-2 bg-indigo-600 rounded-full"></div>
+              <div className="ml-auto w-2 h-2 bg-primary-600 rounded-full"></div>
             )}
           </button>
         ))}

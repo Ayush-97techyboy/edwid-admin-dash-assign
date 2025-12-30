@@ -2,6 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg-primary: #f9fafb;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f3f4f6;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-accent: #ff8449;
+  --border-color: #e5e7eb;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #111827;
+  --bg-secondary: #1f2937;
+  --bg-tertiary: #374151;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-accent: #ff8449;
+  --border-color: #374151;
+}
+
+.theme-bg-primary {
+  background-color: var(--bg-primary);
+}
+
+.theme-bg-secondary {
+  background-color: var(--bg-secondary);
+}
+
+.theme-bg-tertiary {
+  background-color: var(--bg-tertiary);
+}
+
+.theme-text-primary {
+  color: var(--text-primary);
+}
+
+.theme-text-secondary {
+  color: var(--text-secondary);
+}
+
+.theme-text-accent {
+  color: var(--text-accent);
+}
+
+.theme-border {
+  border-color: var(--border-color);
+}
+
+.theme-hover {
+  transition: background-color 0.3s ease;
+}
+
+.theme-hover:hover {
+  background-color: rgba(255, 132, 73, 0.1);
+}
+
 @layer components {
   .animate-fade-in-up {
     animation: fadeInUp 0.5s ease-out;
